@@ -1,3 +1,20 @@
+# source: https://gist.github.com/smbache/eeef4bf21b053da780eb
+carousel_events <- function(id) 
+{
+  js <- sprintf("
+                $('#%s').bind('slide.bs.carousel', function (e) { 
+                $(e.relatedTarget).find('.shiny-bound-output').each(function(i) {
+                $('#' + this.id).trigger('shown')
+                });
+                $(e.target).find('.shiny-bound-output').each(function(i) {
+                $('#' + this.id).trigger('hidden')
+                }); 
+                });
+                ", id)
+  
+  tag("script", gsub("\n", "", js))
+}
+
 #' Layout a Carousel Panel
 #'
 #' Adds a carousel panel to the current shiny app.
@@ -114,6 +131,7 @@ carouselPanel <- function(..., auto.advance=FALSE){
                               `data-target`=paste0("#carousel-", n))) )
         }, 1:(length(contents)-1), SIMPLIFY=F, USE.NAMES=F),
         HTML("</ol>")
-    )
+    ),
+    carousel_events(paste0("carousel-", n))
     )
   }
