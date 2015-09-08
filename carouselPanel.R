@@ -66,6 +66,7 @@ carouselPanel <- function(..., auto.advance=FALSE){
                                    .carousel-control {
                                    opacity: 0.2;
                                    border: none;
+                                   top: auto;
                                    }" ))),
 
     # Set up Javascript to call carousel when document is ready
@@ -73,19 +74,24 @@ carouselPanel <- function(..., auto.advance=FALSE){
       singleton(tags$head(tags$script("$(document).ready(function(){
                                       $('.carousel').carousel({
                                       interval: false
+                                      }).on('slide', function(e){
+                                      console.log('Slide Event');
+                                      console.log(this);
                                       });
-    });")))
+                                      });")))
       }else{
         singleton(tags$head(tags$script("$(document).ready(function(){
                                         $('.carousel').carousel({
                                         interval: 2000
+                                        }).on('slide', function(e){
+                                        console.log('Slide Event');
                                         });
                                         });")))
       },
 
     #Set up carousel
     div(id=paste0("carousel-", n), class="carousel slide", `data-interval`=tolower(as.character(auto.advance)),
-        # Coursel Inner Div - contains the content to display
+        # Carousel Inner Div - contains the content to display
         div(class="carousel-inner",
             div(class="item active", contents[[1]], style="padding: 0px 70px;"),
             mapply(function(elm){
@@ -114,6 +120,17 @@ carouselPanel <- function(..., auto.advance=FALSE){
                               `data-target`=paste0("#carousel-", n))) )
         }, 1:(length(contents)-1), SIMPLIFY=F, USE.NAMES=F),
         HTML("</ol>")
-    )
+    ),
+
+    tags$script(sprintf("$('#carousel-%s').bind('slide.bs.carousel', function (e) {
+
+                            $(e.target).find('.shiny-bound-output').each(function(i) {
+                              $('#' + this.id).trigger('hidden')
+                            });
+
+                            $(e.relatedTarget).find('.shiny-bound-output').each(function(i) {
+                              $('#' + this.id).trigger('shown')
+                            });
+                         }); ", n))
     )
   }
